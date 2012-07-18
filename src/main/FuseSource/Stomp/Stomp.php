@@ -534,6 +534,7 @@ class Stomp
         $data = '';
         $end = false;
         
+        stream_set_blocking($this->_socket, 0);
         do {
             $read = fread($this->_socket, $rb);
             if ($read === false) {
@@ -547,6 +548,7 @@ class Stomp
             }
             $len = strlen($data);
         } while ($len < 2 || $end == false);
+        stream_set_blocking($this->_socket, 1);
         
         list ($header, $body) = explode("\n\n", $data, 2);
         $header = explode("\n", $header);
