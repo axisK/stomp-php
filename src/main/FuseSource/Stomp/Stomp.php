@@ -473,7 +473,7 @@ class Stomp
 		}
 
         if (is_resource($this->_socket)) {
-            $this->_writeFrame(new Frame('DISCONNECT', $headers));
+            $this->_writeFrame(new Frame('DISCONNECT', $headers), false);
             fclose($this->_socket);
         }
         $this->_socket = null;
@@ -488,8 +488,9 @@ class Stomp
      * Write frame to server
      *
      * @param Frame $stompFrame
+     * @param boolean $reconnect Optional parameter that controls whether the client attempts to reconnect on failure.
      */
-    protected function _writeFrame (Frame $stompFrame)
+    protected function _writeFrame (Frame $stompFrame, $reconnect = true)
     {
         if (!is_resource($this->_socket)) {
             throw new StompException('Socket connection hasn\'t been established');
@@ -497,7 +498,7 @@ class Stomp
 
         $data = $stompFrame->__toString();
         $r = fwrite($this->_socket, $data, strlen($data));
-        if ($r === false || $r == 0) {
+        if ($reconnect && ($r === false || $r == 0)) {
             $this->_reconnect();
             $this->_writeFrame($stompFrame);
         }
